@@ -6,7 +6,5 @@
 
 
 
-Open this page -> https://derpyro.github.io/calculator/shared-bank-acc.html
-
-
+Open this page -> https://derpyro.github.io/calculators/shared-bank-acc.html
 
