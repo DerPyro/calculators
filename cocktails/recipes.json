@@ -1,0 +1,539 @@
+{
+    "version": 1,
+    "cocktails": {
+        "Moe's Lynchburg Lemonade": [
+            {
+                "name": "Jack Daniel's",
+                "ratio": 4
+            },
+            {
+                "name": "Triple Sec",
+                "ratio": 1
+            },
+            {
+                "name": "Zitronensaft",
+                "ratio": 1.5
+            },
+            {
+                "name": "Limettensaft",
+                "ratio": 1.5
+            },
+            {
+                "name": "Sprite",
+                "ratio": 30
+            }
+        ],
+        "Jack Daniels Lynchburg Lemonade": [
+            {
+                "name": "Jack Daniel's",
+                "ratio": 30
+            },
+            {
+                "name": "Triple Sec",
+                "ratio": 30
+            },
+            {
+                "name": "Zitronensaft",
+                "ratio": 22.5
+            },
+            {
+                "name": "Sirup",
+                "ratio": 7.5
+            },
+            {
+                "name": "Sprite",
+                "ratio": 120
+            }
+        ],
+        "Mojito": [
+            {
+                "name": "Rum",
+                "ratio": 6
+            },
+            {
+                "name": "Zucker (Sirup)",
+                "ratio": 1.5
+            },
+            {
+                "name": "Limettensaft",
+                "ratio": 2.5
+            },
+            {
+                "name": "Minze",
+                "ratio": 1
+            },
+            {
+                "name": "Soda",
+                "ratio": 15
+            }
+        ],
+        "Caipirinha": [
+            {
+                "name": "Cachaça",
+                "ratio": 6
+            },
+            {
+                "name": "Limette",
+                "ratio": 1
+            },
+            {
+                "name": "Zucker",
+                "ratio": 1.5
+            },
+            {
+                "name": "Eis",
+                "ratio": 1
+            }
+        ],
+        "Margarita": [
+            {
+                "name": "Tequila",
+                "ratio": 6
+            },
+            {
+                "name": "Triple Sec",
+                "ratio": 3
+            },
+            {
+                "name": "Limettensaft",
+                "ratio": 3
+            }
+        ],
+        "Paloma": [
+            {
+                "name": "Tequila",
+                "ratio": 6
+            },
+            {
+                "name": "Limettensaft",
+                "ratio": 2
+            },
+            {
+                "name": "Grapefruit (Saft)",
+                "ratio": 2
+            },
+            {
+                "name": "Zitrone/Lime Soda",
+                "ratio": 12
+            }
+        ],
+        "Cosmopolitan": [
+            {
+                "name": "Wodka",
+                "ratio": 4
+            },
+            {
+                "name": "Triple Sec",
+                "ratio": 1
+            },
+            {
+                "name": "Cranberrysaft",
+                "ratio": 3
+            },
+            {
+                "name": "Limettensaft",
+                "ratio": 1
+            }
+        ],
+        "Moscow Mule": [
+            {
+                "name": "Wodka",
+                "ratio": 5
+            },
+            {
+                "name": "Limettensaft",
+                "ratio": 2
+            },
+            {
+                "name": "Ginger Beer",
+                "ratio": 12
+            }
+        ],
+        "Whiskey Sour": [
+            {
+                "name": "Bourbon/Whiskey",
+                "ratio": 6
+            },
+            {
+                "name": "Zitronensaft",
+                "ratio": 3
+            },
+            {
+                "name": "Zucker (Sirup)",
+                "ratio": 1.5
+            }
+        ],
+        "Old Fashioned": [
+            {
+                "name": "Bourbon/Whiskey",
+                "ratio": 6
+            },
+            {
+                "name": "Zucker (Sirup)",
+                "ratio": 0.5
+            },
+            {
+                "name": "Bitters",
+                "ratio": 2
+            },
+            {
+                "name": "Wasser",
+                "ratio": 1
+            }
+        ],
+        "Mint Julep": [
+            {
+                "name": "Bourbon/Whiskey",
+                "ratio": 6
+            },
+            {
+                "name": "Sirup (Zucker)",
+                "ratio": 2
+            },
+            {
+                "name": "Minze",
+                "ratio": 1
+            },
+            {
+                "name": "Eis",
+                "ratio": 2
+            }
+        ],
+        "Daiquiri": [
+            {
+                "name": "Rum",
+                "ratio": 6
+            },
+            {
+                "name": "Limettensaft",
+                "ratio": 3
+            },
+            {
+                "name": "Zucker (Sirup)",
+                "ratio": 1.5
+            }
+        ],
+        "Pina Colada": [
+            {
+                "name": "Rum",
+                "ratio": 5
+            },
+            {
+                "name": "Ananassaft",
+                "ratio": 8
+            },
+            {
+                "name": "Kokosmilch/Kokossirup",
+                "ratio": 3
+            }
+        ],
+        "Tequila Sunrise": [
+            {
+                "name": "Tequila",
+                "ratio": 4
+            },
+            {
+                "name": "Orangensaft",
+                "ratio": 6
+            },
+            {
+                "name": "Grenadine",
+                "ratio": 1.5
+            }
+        ],
+        "Long Island Iced Tea": [
+            {
+                "name": "Wodka",
+                "ratio": 2
+            },
+            {
+                "name": "Tequila",
+                "ratio": 2
+            },
+            {
+                "name": "Rum",
+                "ratio": 2
+            },
+            {
+                "name": "Gin",
+                "ratio": 2
+            },
+            {
+                "name": "Triple Sec",
+                "ratio": 1
+            },
+            {
+                "name": "Zitronensaft",
+                "ratio": 1
+            },
+            {
+                "name": "Cola/Tea (Soda)",
+                "ratio": 8
+            }
+        ],
+        "Aperol Spritz": [
+            {
+                "name": "Aperol",
+                "ratio": 3
+            },
+            {
+                "name": "Sekt/Prosecco",
+                "ratio": 2
+            },
+            {
+                "name": "Soda",
+                "ratio": 2
+            }
+        ],
+        "Hugo": [
+            {
+                "name": "Holunderblütensirup",
+                "ratio": 2
+            },
+            {
+                "name": "Sekt/Prosecco",
+                "ratio": 5
+            },
+            {
+                "name": "Soda",
+                "ratio": 3
+            },
+            {
+                "name": "Minze",
+                "ratio": 0.5
+            }
+        ],
+        "French 75": [
+            {
+                "name": "Gin",
+                "ratio": 4
+            },
+            {
+                "name": "Zitronensaft",
+                "ratio": 1.5
+            },
+            {
+                "name": "Zucker (Sirup)",
+                "ratio": 1
+            },
+            {
+                "name": "Sekt/Champagner",
+                "ratio": 6
+            }
+        ],
+        "Aviation": [
+            {
+                "name": "Gin",
+                "ratio": 4.5
+            },
+            {
+                "name": "Zitronensaft",
+                "ratio": 2.5
+            },
+            {
+                "name": "Maraschino-Likör",
+                "ratio": 1
+            },
+            {
+                "name": "Blaulikör (z.B. Crème de Violette)",
+                "ratio": 0.5
+            }
+        ],
+        "Singapore Sling": [
+            {
+                "name": "Gin",
+                "ratio": 3
+            },
+            {
+                "name": "Cherry Brandy",
+                "ratio": 1.5
+            },
+            {
+                "name": "Triple Sec",
+                "ratio": 1
+            },
+            {
+                "name": "Benediktin/Dom Bénédictine",
+                "ratio": 0.5
+            },
+            {
+                "name": "Limettensaft",
+                "ratio": 1.5
+            },
+            {
+                "name": "Ananassaft",
+                "ratio": 1.5
+            }
+        ],
+        "Espresso Martini": [
+            {
+                "name": "Wodka",
+                "ratio": 4
+            },
+            {
+                "name": "Kaffeelikör (z.B. Kahlúa)",
+                "ratio": 2
+            },
+            {
+                "name": "Espresso",
+                "ratio": 2
+            },
+            {
+                "name": "Zucker (Sirup)",
+                "ratio": 0.5
+            }
+        ],
+        "Negroni": [
+            {
+                "name": "Gin",
+                "ratio": 3
+            },
+            {
+                "name": "Vermouth rosso",
+                "ratio": 3
+            },
+            {
+                "name": "Campari",
+                "ratio": 3
+            }
+        ],
+        "Americano": [
+            {
+                "name": "Campari",
+                "ratio": 3
+            },
+            {
+                "name": "Vermouth rosso",
+                "ratio": 3
+            },
+            {
+                "name": "Soda",
+                "ratio": 6
+            }
+        ],
+        "Boulevardier": [
+            {
+                "name": "Bourbon/Whiskey",
+                "ratio": 3
+            },
+            {
+                "name": "Vermouth rosso",
+                "ratio": 3
+            },
+            {
+                "name": "Campari",
+                "ratio": 3
+            }
+        ],
+        "Gin Tonic": [
+            {
+                "name": "Gin",
+                "ratio": 3
+            },
+            {
+                "name": "Tonic Water",
+                "ratio": 12
+            }
+        ],
+        "Wodka Lemon": [
+            {
+                "name": "Wodka",
+                "ratio": 3
+            },
+            {
+                "name": "Zitronensaft",
+                "ratio": 1
+            },
+            {
+                "name": "Sprite",
+                "ratio": 12
+            }
+        ],
+        "Rum Cola": [
+            {
+                "name": "Rum",
+                "ratio": 3
+            },
+            {
+                "name": "Cola",
+                "ratio": 12
+            }
+        ],
+        "Tequila Sunrise Longdrink": [
+            {
+                "name": "Tequila",
+                "ratio": 3
+            },
+            {
+                "name": "Orangensaft",
+                "ratio": 9
+            },
+            {
+                "name": "Grenadine",
+                "ratio": 1
+            }
+        ],
+        "Whiskey Cola": [
+            {
+                "name": "Bourbon/Whiskey",
+                "ratio": 3
+            },
+            {
+                "name": "Cola",
+                "ratio": 12
+            }
+        ],
+        "Jack & Cola": [
+            {
+                "name": "Jack Daniel's",
+                "ratio": 3
+            },
+            {
+                "name": "Cola",
+                "ratio": 12
+            }
+        ],
+        "Jack & Ginger Ale": [
+            {
+                "name": "Jack Daniel's",
+                "ratio": 3
+            },
+            {
+                "name": "Ginger Ale",
+                "ratio": 12
+            }
+        ],
+        "Gin Fizz": [
+            {
+                "name": "Gin",
+                "ratio": 3
+            },
+            {
+                "name": "Zitronensaft",
+                "ratio": 1.5
+            },
+            {
+                "name": "Soda",
+                "ratio": 9
+            },
+            {
+                "name": "Zucker (Sirup)",
+                "ratio": 0.5
+            }
+        ],
+        "Aperol Spritz Longdrink": [
+            {
+                "name": "Aperol",
+                "ratio": 3
+            },
+            {
+                "name": "Sekt/Prosecco",
+                "ratio": 2
+            },
+            {
+                "name": "Soda",
+                "ratio": 3
+            }
+        ]
+    }
+}

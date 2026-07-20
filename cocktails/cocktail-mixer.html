@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cocktail-Skalierer (Verhältnis)</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: min(820px, 95vw);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 10px
+    }
+
+    .sub {
+      color: #555;
+      margin-top: -6px;
+      margin-bottom: 18px
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap
+    }
+
+    .col {
+      flex: 1;
+      min-width: 240px
+    }
+
+    button {
+      margin-top: 18px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #4f46e5;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9
+    }
+
+    .smallbtn {
+      margin-top: 10px;
+      width: auto;
+      padding: 8px 12px;
+      background: #111827;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px
+    }
+
+    .mode {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+      flex-wrap: wrap
+    }
+
+    .mode input {
+      width: auto;
+      margin-top: 0
+    }
+
+    .result {
+      margin-top: 18px;
+      padding: 12px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+    }
+
+    th {
+      color: #333
+    }
+
+    .mono {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>Cocktail-Skalierer (Verhältnis)</h1>
+    <div class="sub">Cocktail auswählen (vordefiniert) oder Rezept manuell über Verhältnisse eingeben.</div>
+
+    <div class="row">
+      <div class="col">
+        <label>Cocktail (Voreinstellung)</label>
+        <select id="cocktailSelect"></select>
+        <div class="hint">Wird ein Cocktail gewählt, werden die Zutatenfelder automatisch gefüllt.</div>
+      </div>
+      <div class="col">
+        <label>Rezeptname (optional)</label>
+        <input id="recipeName" type="text" placeholder="z.B. Margarita" value="Cocktail-Rezept">
+        <div class="hint">Beim Auswählen wird der Name gesetzt (du kannst ihn danach ändern).</div>
+      </div>
+    </div>
+
+    <label>Zutaten (Verhältnis)</label>
+    <div class="hint">Beispiel: Rezept 2:1:1 → Zutat A = 2, Zutat B = 1, Zutat C = 1.</div>
+
+    <table id="ingredientsTable">
+      <thead>
+        <tr>
+          <th>Zutat</th>
+          <th style="width:220px">Verhältnis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input class="ingName" type="text" value="Zutat A"></td>
+          <td><input class="ingRatio mono" type="number" step="any" value="1" min="0"></td>
+        </tr>
+        <tr>
+          <td><input class="ingName" type="text" value="Zutat B"></td>
+          <td><input class="ingRatio mono" type="number" step="any" value="2" min="0"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="smallbtn" type="button" onclick="addRow()">+ Zutat hinzufügen</button>
+
+    <label>Skalierungs-Modus</label>
+    <div class="mode">
+      <label style="display:flex;align-items:center;gap:8px;margin:0;font-weight:normal">
+        <input type="radio" name="mode" value="total" checked>
+        Ergebnis-Liter vorgeben
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;margin:0;font-weight:normal">
+        <input type="radio" name="mode" value="one">
+        Liter einer Zutat vorgeben
+      </label>
+    </div>
+
+    <div id="modeTotal">
+      <label>Gewünschtes Ergebnis (Liter)</label>
+      <input id="desiredTotal" type="number" step="any" min="0" value="3">
+    </div>
+
+    <div id="modeOne" style="display:none">
+      <label>Welche Zutat (aus der Liste)?</label>
+      <select id="oneIndex"></select>
+
+      <label>Menge dieser Zutat (Liter)</label>
+      <input id="desiredOne" type="number" step="any" min="0" value="0.5">
+      <div class="hint">Der Rest wird anhand des Verhältnisses berechnet.</div>
+    </div>
+
+    <button onclick="calculate()">Berechnen</button>
+
+    <div class="result" id="result"></div>
+    <div style="margin-top:14px; display:none" id="glassWrap">
+      <svg id="glassViz" width="120" height="320" viewBox="0 0 120 320" role="img"
+        aria-label="Glas mit Mischverhältnis">
+        <!-- Rahmen -->
+        <rect x="25" y="20" width="70" height="280" rx="18" fill="none" stroke="#111827" stroke-width="3" />
+        <!-- Füllfläche (Masken-Kasten) -->
+        <rect id="glassFill" x="30" y="28" width="60" height="264" rx="12" fill="#eef2ff" stroke="none" />
+
+        <!-- Für Schichten -->
+        <g id="glassLayers"></g>
+
+        <!-- Optional: Skala/Markierungen -->
+        <g id="glassScale" opacity="0.35">
+          <line x1="35" x2="85" y1="60" y2="60" stroke="#111827" stroke-width="2" />
+          <line x1="35" x2="85" y1="100" y2="100" stroke="#111827" stroke-width="2" />
+          <line x1="35" x2="85" y1="140" y2="140" stroke="#111827" stroke-width="2" />
+          <line x1="35" x2="85" y1="180" y2="180" stroke="#111827" stroke-width="2" />
+          <line x1="35" x2="85" y1="220" y2="220" stroke="#111827" stroke-width="2" />
+          <line x1="35" x2="85" y1="260" y2="260" stroke="#111827" stroke-width="2" />
+          <line x1="35" x2="85" y1="300" y2="300" stroke="#111827" stroke-width="2" />
+        </g>
+      </svg>
+
+      <div style="margin-top:10px; font-size:12px; color:#374151">
+        <div><strong>Farben:</strong> Reihenfolge von unten nach oben</div>
+        <div id="glassLegend" style="margin-top:6px; display:flex; flex-wrap:wrap; gap:8px"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BASE64_JSON_HIER = "ewogICAgInZlcnNpb24iOiAxLAogICAgImNvY2t0YWlscyI6IHsKICAgICAgICAiTW9lJ3MgTHluY2hidXJnIExlbW9uYWRlIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJKYWNrIERhbmllbCdzIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDQKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiVHJpcGxlIFNlYyIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlppdHJvbmVuc2FmdCIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxLjUKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiTGltZXR0ZW5zYWZ0IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEuNQogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJTcHJpdGUiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMzAKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIkphY2sgRGFuaWVscyBMeW5jaGJ1cmcgTGVtb25hZGUiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkphY2sgRGFuaWVsJ3MiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMzAKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiVHJpcGxlIFNlYyIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzMAogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJaaXRyb25lbnNhZnQiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMjIuNQogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJTaXJ1cCIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA3LjUKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiU3ByaXRlIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEyMAogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiTW9qaXRvIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJSdW0iLAogICAgICAgICAgICAgICAgInJhdGlvIjogNgogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJadWNrZXIgKFNpcnVwKSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxLjUKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiTGltZXR0ZW5zYWZ0IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDIuNQogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJNaW56ZSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlNvZGEiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMTUKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIkNhaXBpcmluaGEiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkNhY2hhw6dhIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDYKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiTGltZXR0ZSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlp1Y2tlciIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxLjUKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiRWlzIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIk1hcmdhcml0YSI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiVGVxdWlsYSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA2CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlRyaXBsZSBTZWMiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMwogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJMaW1ldHRlbnNhZnQiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMwogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiUGFsb21hIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJUZXF1aWxhIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDYKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiTGltZXR0ZW5zYWZ0IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDIKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiR3JhcGVmcnVpdCAoU2FmdCkiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMgogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJaaXRyb25lL0xpbWUgU29kYSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxMgogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiQ29zbW9wb2xpdGFuIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJXb2RrYSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA0CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlRyaXBsZSBTZWMiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMQogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJDcmFuYmVycnlzYWZ0IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDMKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiTGltZXR0ZW5zYWZ0IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIk1vc2NvdyBNdWxlIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJXb2RrYSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA1CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkxpbWV0dGVuc2FmdCIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAyCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkdpbmdlciBCZWVyIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEyCiAgICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJXaGlza2V5IFNvdXIiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkJvdXJib24vV2hpc2tleSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA2CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlppdHJvbmVuc2FmdCIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlp1Y2tlciAoU2lydXApIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEuNQogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiT2xkIEZhc2hpb25lZCI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiQm91cmJvbi9XaGlza2V5IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDYKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiWnVja2VyIChTaXJ1cCkiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMC41CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkJpdHRlcnMiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMgogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJXYXNzZXIiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMQogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiTWludCBKdWxlcCI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiQm91cmJvbi9XaGlza2V5IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDYKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiU2lydXAgKFp1Y2tlcikiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMgogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJNaW56ZSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkVpcyIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAyCiAgICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJEYWlxdWlyaSI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiUnVtIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDYKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiTGltZXR0ZW5zYWZ0IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDMKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiWnVja2VyIChTaXJ1cCkiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMS41CiAgICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJQaW5hIENvbGFkYSI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiUnVtIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDUKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiQW5hbmFzc2FmdCIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA4CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIktva29zbWlsY2gvS29rb3NzaXJ1cCIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzCiAgICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJUZXF1aWxhIFN1bnJpc2UiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlRlcXVpbGEiLAogICAgICAgICAgICAgICAgInJhdGlvIjogNAogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJPcmFuZ2Vuc2FmdCIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA2CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkdyZW5hZGluZSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxLjUKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIkxvbmcgSXNsYW5kIEljZWQgVGVhIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJXb2RrYSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAyCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlRlcXVpbGEiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMgogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJSdW0iLAogICAgICAgICAgICAgICAgInJhdGlvIjogMgogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJHaW4iLAogICAgICAgICAgICAgICAgInJhdGlvIjogMgogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJUcmlwbGUgU2VjIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiWml0cm9uZW5zYWZ0IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiQ29sYS9UZWEgKFNvZGEpIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDgKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIkFwZXJvbCBTcHJpdHoiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkFwZXJvbCIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlNla3QvUHJvc2VjY28iLAogICAgICAgICAgICAgICAgInJhdGlvIjogMgogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJTb2RhIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDIKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIkh1Z28iOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkhvbHVuZGVyYmzDvHRlbnNpcnVwIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDIKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiU2VrdC9Qcm9zZWNjbyIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA1CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlNvZGEiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMwogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJNaW56ZSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAwLjUKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIkZyZW5jaCA3NSI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiR2luIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDQKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiWml0cm9uZW5zYWZ0IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEuNQogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJadWNrZXIgKFNpcnVwKSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlNla3QvQ2hhbXBhZ25lciIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA2CiAgICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJBdmlhdGlvbiI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiR2luIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDQuNQogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJaaXRyb25lbnNhZnQiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMi41CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIk1hcmFzY2hpbm8tTGlrw7ZyIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiQmxhdWxpa8O2ciAoei5CLiBDcsOobWUgZGUgVmlvbGV0dGUpIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDAuNQogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiU2luZ2Fwb3JlIFNsaW5nIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJHaW4iLAogICAgICAgICAgICAgICAgInJhdGlvIjogMwogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJDaGVycnkgQnJhbmR5IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEuNQogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJUcmlwbGUgU2VjIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiQmVuZWRpa3Rpbi9Eb20gQsOpbsOpZGljdGluZSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAwLjUKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiTGltZXR0ZW5zYWZ0IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEuNQogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJBbmFuYXNzYWZ0IiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEuNQogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiRXNwcmVzc28gTWFydGluaSI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiV29ka2EiLAogICAgICAgICAgICAgICAgInJhdGlvIjogNAogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJLYWZmZWVsaWvDtnIgKHouQi4gS2FobMO6YSkiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMgogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJFc3ByZXNzbyIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAyCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlp1Y2tlciAoU2lydXApIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDAuNQogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiTmVncm9uaSI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiR2luIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDMKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiVmVybW91dGggcm9zc28iLAogICAgICAgICAgICAgICAgInJhdGlvIjogMwogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJDYW1wYXJpIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDMKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIkFtZXJpY2FubyI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiQ2FtcGFyaSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlZlcm1vdXRoIHJvc3NvIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDMKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiU29kYSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA2CiAgICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJCb3VsZXZhcmRpZXIiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkJvdXJib24vV2hpc2tleSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlZlcm1vdXRoIHJvc3NvIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDMKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiQ2FtcGFyaSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzCiAgICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJHaW4gVG9uaWMiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkdpbiIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlRvbmljIFdhdGVyIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEyCiAgICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJXb2RrYSBMZW1vbiI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiV29ka2EiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMwogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJaaXRyb25lbnNhZnQiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMQogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJTcHJpdGUiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMTIKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIlJ1bSBDb2xhIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJSdW0iLAogICAgICAgICAgICAgICAgInJhdGlvIjogMwogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJDb2xhIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEyCiAgICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJUZXF1aWxhIFN1bnJpc2UgTG9uZ2RyaW5rIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJUZXF1aWxhIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDMKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiT3JhbmdlbnNhZnQiLAogICAgICAgICAgICAgICAgInJhdGlvIjogOQogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJHcmVuYWRpbmUiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMQogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiV2hpc2tleSBDb2xhIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJCb3VyYm9uL1doaXNrZXkiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMwogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJDb2xhIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDEyCiAgICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJKYWNrICYgQ29sYSI6IFsKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiSmFjayBEYW5pZWwncyIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkNvbGEiLAogICAgICAgICAgICAgICAgInJhdGlvIjogMTIKICAgICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIkphY2sgJiBHaW5nZXIgQWxlIjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJKYWNrIERhbmllbCdzIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDMKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiR2luZ2VyIEFsZSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxMgogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiR2luIEZpenoiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkdpbiIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlppdHJvbmVuc2FmdCIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAxLjUKICAgICAgICAgICAgfSwKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgIm5hbWUiOiAiU29kYSIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiA5CiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlp1Y2tlciAoU2lydXApIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDAuNQogICAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAiQXBlcm9sIFNwcml0eiBMb25nZHJpbmsiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIkFwZXJvbCIsCiAgICAgICAgICAgICAgICAicmF0aW8iOiAzCiAgICAgICAgICAgIH0sCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICJuYW1lIjogIlNla3QvUHJvc2VjY28iLAogICAgICAgICAgICAgICAgInJhdGlvIjogMgogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgICAibmFtZSI6ICJTb2RhIiwKICAgICAgICAgICAgICAgICJyYXRpbyI6IDMKICAgICAgICAgICAgfQogICAgICAgIF0KICAgIH0KfQ==";
+
+    function decodeBase64Json(b64) {
+      // UTF-8 robust
+      const bin = atob(b64);
+      const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+      const jsonStr = new TextDecoder("utf-8").decode(bytes);
+      return JSON.parse(jsonStr);
+    }
+
+    function colorForIndex(i) {
+      // feste, gut unterscheidbare Farben
+      const palette = [
+        "#4f46e5", // indigo
+        "#06b6d4", // cyan
+        "#f97316", // orange
+        "#22c55e", // green
+        "#e11d48", // rose
+        "#a855f7", // purple
+        "#eab308", // yellow
+        "#0ea5e9", // sky
+      ];
+      return palette[i % palette.length];
+    }
+
+    function renderGlass(amounts) {
+      const wrap = document.getElementById("glassWrap");
+      const layers = document.getElementById("glassLayers");
+      const legend = document.getElementById("glassLegend");
+
+      layers.innerHTML = "";
+      legend.innerHTML = "";
+
+      const fillX = 30, fillW = 60;
+      const fillYTop = 28;
+      const fillH = 264;
+
+      // Filter + Zahlen sauber machen
+      const items = amounts
+        .map((x) => ({ name: x.name, amount: Number(x.amount) }))
+        .filter((x) => isFinite(x.amount) && x.amount > 0);
+
+      if (!items.length) {
+        wrap.style.display = "none";
+        return;
+      }
+
+      const total = items.reduce((s, x) => s + x.amount, 0);
+      if (!(total > 0)) {
+        wrap.style.display = "none";
+        return;
+      }
+
+      // Wichtig: Wir stapeln U N T E N nach O B E N
+      // => Bei der aktuellen aktuellen Zutaten-Reihenfolge soll items[0] unten landen.
+      let currentBottom = fillYTop + fillH;
+
+      items.forEach((it, idx) => {
+        const h = (it.amount / total) * fillH;
+        const y = currentBottom - h; // rect endet immer am aktuellen bottom
+
+        const color = colorForIndex(idx);
+
+        // Layer
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", fillX);
+        rect.setAttribute("y", y);
+        rect.setAttribute("width", fillW);
+        rect.setAttribute("height", h);
+        rect.setAttribute("fill", color);
+        rect.setAttribute("opacity", "0.88");
+        rect.setAttribute("rx", "10");
+        rect.setAttribute("stroke", "rgba(255,255,255,0.55)");
+        rect.setAttribute("stroke-width", "2");
+
+        // Tooltip
+        const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+        title.textContent = `${it.name}: ${it.amount
+          .toFixed(3)
+          .replace(/\.?0+$/, "")
+          .replace(/(\.\d+?)0+$/, "$1")} L`;
+        rect.appendChild(title);
+
+        layers.appendChild(rect);
+
+        // Legende: unten -> oben (entspricht items-Reihenfolge)
+        const pill = document.createElement("div");
+        pill.style.display = "flex";
+        pill.style.alignItems = "center";
+        pill.style.gap = "6px";
+
+        const swatch = document.createElement("div");
+        swatch.style.width = "14px";
+        swatch.style.height = "10px";
+        swatch.style.borderRadius = "3px";
+        swatch.style.background = color;
+
+        const txt = document.createElement("div");
+        txt.style.maxWidth = "180px";
+        txt.style.whiteSpace = "nowrap";
+        txt.style.overflow = "hidden";
+        txt.style.textOverflow = "ellipsis";
+        txt.textContent = `${it.name}`;
+
+        pill.appendChild(swatch);
+        pill.appendChild(txt);
+        legend.appendChild(pill);
+
+        currentBottom = y;
+      });
+
+      wrap.style.display = "block";
+    }
+
+    // === 2) Cocktails laden ===
+    let COCKTAILS = {};
+    try {
+      const loaded = decodeBase64Json(BASE64_JSON_HIER);
+      COCKTAILS = loaded?.cocktails || {};
+    } catch (e) {
+      // Wenn Base64 noch nicht gesetzt ist: leere Liste -> Dropdown nur "custom"
+      COCKTAILS = {};
+    }
+
+    function initCocktailDropdown() {
+      const select = document.getElementById("cocktailSelect");
+      select.innerHTML = "";
+
+      const customOpt = document.createElement("option");
+      customOpt.value = "custom";
+      customOpt.textContent = "Manuell (eigene Verhältnisse)";
+      select.appendChild(customOpt);
+
+      const names = Object.keys(COCKTAILS);
+      for (const n of names) {
+        const opt = document.createElement("option");
+        opt.value = n;
+        opt.textContent = n;
+        select.appendChild(opt);
+      }
+    }
+
+    function clearIngredients() {
+      document.querySelector("#ingredientsTable tbody").innerHTML = "";
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function setIngredientsFromCocktail(cocktailName) {
+      const data = COCKTAILS[cocktailName];
+      if (!Array.isArray(data) || !data.length) return;
+
+      clearIngredients();
+      const tbody = document.querySelector("#ingredientsTable tbody");
+
+      data.forEach((ing) => {
+        const tr = document.createElement("tr");
+        const name = ing?.name ?? "Zutat";
+        const ratio = Number(ing?.ratio);
+
+        tr.innerHTML = `
+          <td><input class="ingName" type="text" value="${escapeHtml(name)}"></td>
+          <td><input class="ingRatio mono" type="number" step="any" min="0" value="${isFinite(ratio) ? ratio : 0}"></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      syncSelectOptions();
+    }
+
+    function applyCocktail() {
+      const select = document.getElementById("cocktailSelect");
+      const name = select.value;
+
+      if (name === "custom") return;
+
+      setIngredientsFromCocktail(name);
+      document.getElementById("recipeName").value = name;
+    }
+
+    function syncSelectOptions() {
+      const tbody = document.querySelector("#ingredientsTable tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const select = document.getElementById("oneIndex");
+      const current = select.value;
+
+      select.innerHTML = "";
+      rows.forEach((row, i) => {
+        const nameInput = row.querySelector(".ingName");
+        const name = (nameInput?.value || "").trim();
+        const label = name ? name : `Zutat ${i + 1}`;
+        const opt = document.createElement("option");
+        opt.value = String(i);
+        opt.textContent = label;
+        select.appendChild(opt);
+      });
+
+      if (rows.length) {
+        select.value = current && current < rows.length ? current : "0";
+      }
+    }
+
+    function addRow() {
+      const tbody = document.querySelector("#ingredientsTable tbody");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><input class="ingName" type="text" value="Zutat"></td>
+        <td><input class="ingRatio mono" type="number" step="any" value="1" min="0"></td>
+      `;
+      tbody.appendChild(tr);
+      document.getElementById("cocktailSelect").value = "custom";
+      syncSelectOptions();
+    }
+
+    function getMode() {
+      const checked = document.querySelector('input[name="mode"]:checked');
+      return checked ? checked.value : "total";
+    }
+
+    function readIngredients() {
+      const rows = Array.from(document.querySelectorAll("#ingredientsTable tbody tr"));
+      return rows.map(row => {
+        const name = row.querySelector(".ingName")?.value?.trim() || "";
+        const ratioStr = row.querySelector(".ingRatio")?.value;
+        const ratio = parseFloat(ratioStr);
+        return { name: name || "Zutat", ratio: isFinite(ratio) ? ratio : 0 };
+      });
+    }
+
+    function formatLiters(x) {
+      const v = Number(x);
+      if (!isFinite(v)) return "-";
+      return v.toFixed(3).replace(/\.?0+$/, '').replace(/(\.\d+?)0+$/, '$1');
+    }
+
+    function calculate() {
+      const mode = getMode();
+      const ingredients = readIngredients();
+
+      const ratios = ingredients.map(i => i.ratio);
+      const ratioSum = ratios.reduce((a, b) => a + b, 0);
+
+      if (ratioSum <= 0) {
+        alert("Bitte mindestens eine Zutat mit einem Verhältnis > 0 eingeben.");
+        return;
+      }
+
+      let desiredTotal, desiredOne, scale;
+
+      if (mode === "total") {
+        desiredTotal = parseFloat(document.getElementById("desiredTotal").value);
+        if (!isFinite(desiredTotal) || desiredTotal <= 0) {
+          alert("Bitte eine Ergebnis-Menge (Liter) > 0 eingeben.");
+          return;
+        }
+        scale = desiredTotal / ratioSum;
+      } else {
+        desiredOne = parseFloat(document.getElementById("desiredOne").value);
+        const oneIndex = parseInt(document.getElementById("oneIndex").value, 10);
+
+        if (!isFinite(desiredOne) || desiredOne <= 0) {
+          alert("Bitte eine Menge der gewählten Zutat (Liter) > 0 eingeben.");
+          return;
+        }
+        if (oneIndex < 0 || oneIndex >= ratios.length) {
+          alert("Bitte eine gültige Zutat auswählen.");
+          return;
+        }
+        const chosenRatio = ratios[oneIndex];
+        if (chosenRatio <= 0) {
+          alert("Die gewählte Zutat hat Verhältnis <= 0. Bitte anpassen.");
+          return;
+        }
+        scale = desiredOne / chosenRatio;
+        desiredTotal = scale * ratioSum;
+      }
+
+      const lines = [];
+      let totalCheck = 0;
+
+      // Fürs Glas (Reihenfolge: unten -> oben ist gleich der Reihenfolge von idx=0..n-1)
+      const glassAmounts = ingredients.map((ing, idx) => {
+        const amount = ing.ratio * scale;
+        totalCheck += amount;
+        lines.push(`${idx + 1}. ${ing.name}: ${formatLiters(amount)} L`);
+        return { name: ing.name, amount };
+      });
+
+      // Glas anzeigen/aktualisieren
+      renderGlass(glassAmounts);
+
+      const recipeName = (document.getElementById("recipeName").value || "").trim() || "Cocktail-Rezept";
+      const res = document.getElementById("result");
+      res.style.display = "block";
+
+      if (mode === "total") {
+        res.innerHTML =
+          `<div><strong>${escapeHtml(recipeName)}</strong></div>` +
+          `<div style="margin-top:6px" class="mono"><strong>Ergebnis (Ziel):</strong> ${formatLiters(desiredTotal)} L</div>` +
+          `<div style="margin-top:10px">${lines.join("<br>")}</div>` +
+          `<div style="margin-top:12px" class="mono"><strong>Summe (Check):</strong> ${formatLiters(totalCheck)} L</div>`;
+      } else {
+        const chosenName = ingredients[parseInt(document.getElementById("oneIndex").value, 10)].name;
+        res.innerHTML =
+          `<div><strong>${escapeHtml(recipeName)}</strong></div>` +
+          `<div style="margin-top:6px" class="mono"><strong>Zutat (gegeben):</strong> ${escapeHtml(chosenName)} = ${formatLiters(desiredOne)} L</div>` +
+          `<div style="margin-top:6px" class="mono"><strong>Ergebnis (berechnet):</strong> ${formatLiters(desiredTotal)} L</div>` +
+          `<div style="margin-top:10px">${lines.join("<br>")}</div>` +
+          `<div style="margin-top:12px" class="mono"><strong>Summe (Check):</strong> ${formatLiters(totalCheck)} L</div>`;
+      }
+    }
+
+    function setupModeToggle() {
+      const modeTotal = document.getElementById("modeTotal");
+      const modeOne = document.getElementById("modeOne");
+      document.querySelectorAll('input[name="mode"]').forEach(r => {
+        r.addEventListener("change", () => {
+          const m = getMode();
+          if (m === "total") {
+            modeTotal.style.display = "block";
+            modeOne.style.display = "none";
+          } else {
+            modeTotal.style.display = "none";
+            modeOne.style.display = "block";
+          }
+        });
+      });
+    }
+
+    // init
+    initCocktailDropdown();
+    setupModeToggle();
+    syncSelectOptions();
+
+    document.getElementById("cocktailSelect").addEventListener("change", () => {
+      applyCocktail();
+    });
+    window.addEventListener("load", () => {
+      // optional: default auf erster Cocktail (außer custom)
+      const sel = document.getElementById("cocktailSelect");
+      if (sel.value !== "custom" && sel.value) applyCocktail();
+    });
+  </script>
+</body>
+
+</html>
